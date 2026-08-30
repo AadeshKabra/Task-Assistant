@@ -1,0 +1,28 @@
+appId: com.akabra.taskassistant
+productName: Task Assistant
+copyright: Copyright © 2026
+
+directories:
+  output: release
+  buildResources: build
+
+# Only ship the compiled output + production node_modules (native better-sqlite3).
+files:
+  - out/**/*
+  - package.json
+
+# Rebuild/pack native modules (better-sqlite3) correctly for the app.
+npmRebuild: true
+
+win:
+  target:
+    - nsis
+  # icon: build/icon.ico   # drop a 256x256 .ico here to brand the installer
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Task Assistant
