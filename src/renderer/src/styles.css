@@ -267,6 +267,35 @@ input[type='time'] {
 .task:hover {
   box-shadow: 0 1px 6px var(--shadow);
 }
+.task.reorderable {
+  position: relative;
+}
+.drag-handle {
+  align-self: center;
+  color: var(--text-dim);
+  cursor: grab;
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0.4; /* always visible so it reads as grabbable */
+  transition: opacity 0.1s;
+  user-select: none;
+}
+.task.reorderable:hover .drag-handle {
+  opacity: 0.85;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.task.dragging {
+  opacity: 0.4;
+}
+/* Insertion indicator line while dragging over a target. */
+.task.drop-top {
+  box-shadow: inset 0 3px 0 -1px var(--accent);
+}
+.task.drop-bottom {
+  box-shadow: inset 0 -3px 0 -1px var(--accent);
+}
 .task.bucket-overdue {
   border-left-color: var(--overdue);
 }
@@ -377,6 +406,11 @@ input[type='time'] {
   transition: opacity 0.1s;
 }
 .task:hover .task-actions {
+  opacity: 1;
+}
+/* Completed tasks (shown in the Done view) keep their delete/edit buttons
+   visible so they're clearly actionable without hovering. */
+.task-done .task-actions {
   opacity: 1;
 }
 

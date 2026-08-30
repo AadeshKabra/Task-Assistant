@@ -8,6 +8,14 @@ interface Props {
   onToggle: (task: Task) => void
   onEdit: (task: Task) => void
   onDelete: (id: number) => void
+  // Drag-and-drop reordering (enabled in due-date sort / grouped views).
+  reorderable?: boolean
+  isDragging?: boolean
+  dropLine?: 'top' | 'bottom' | null
+  onDragStart?: (task: Task) => void
+  onDragOver?: (task: Task, e: React.DragEvent) => void
+  onDrop?: (task: Task) => void
+  onDragEnd?: () => void
 }
 
 const RECUR_LABEL: Record<Task['recurrence'], string> = {
@@ -23,7 +31,14 @@ export default function TaskItem({
   strikeCompleted,
   onToggle,
   onEdit,
-  onDelete
+  onDelete,
+  reorderable = false,
+  isDragging = false,
+  dropLine = null,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd
 }: Props): JSX.Element {
   const bucket = bucketOf(task, now)
   const classes = [
@@ -31,13 +46,29 @@ export default function TaskItem({
     `prio-${task.priority}`,
     `bucket-${bucket}`,
     task.completed ? 'task-done' : '',
-    task.completed && strikeCompleted ? 'task-strike' : ''
+    task.completed && strikeCompleted ? 'task-strike' : '',
+    reorderable ? 'reorderable' : '',
+    isDragging ? 'dragging' : '',
+    dropLine === 'top' ? 'drop-top' : '',
+    dropLine === 'bottom' ? 'drop-bottom' : ''
   ]
     .filter(Boolean)
     .join(' ')
 
   return (
-    <li className={classes}>
+    <li
+      className={classes}
+      draggable={reorderable}
+      onDragStart={reorderable ? () => onDragStart?.(task) : undefined}
+      onDragOver={reorderable ? (e) => onDragOver?.(task, e) : undefined}
+      onDrop={reorderable ? () => onDrop?.(task) : undefined}
+      onDragEnd={reorderable ? () => onDragEnd?.() : undefined}
+    >
+      {reorderable && (
+        <span className="drag-handle" title="Drag to reorder within this due date">
+          ⠿
+        </span>
+      )}
       <input
         type="checkbox"
         className="task-check"

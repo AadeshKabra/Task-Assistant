@@ -18,6 +18,8 @@ export interface Task {
   notes: string
   completed: boolean
   recurrence: Recurrence
+  /** Manual sort order; used as the tiebreaker among tasks with the same due date. */
+  position: number
   createdAt: string
   updatedAt: string
   completedAt: string | null
@@ -66,6 +68,8 @@ export interface Api {
     remove(id: number): Promise<boolean>
     setCompleted(id: number, completed: boolean): Promise<Task | null>
     topics(): Promise<string[]>
+    /** Persist a manual order for a set of tasks (a same-due-date cluster). */
+    reorder(orderedIds: number[]): Promise<void>
   }
   settings: {
     get(): Promise<Settings>

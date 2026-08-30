@@ -17,7 +17,7 @@ npmRebuild: true
 win:
   target:
     - nsis
-  # icon: build/icon.ico   # drop a 256x256 .ico here to brand the installer
+  icon: build/icon.ico
 
 nsis:
   oneClick: false

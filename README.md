@@ -22,6 +22,11 @@ Built with **Electron + React + TypeScript**, data in **SQLite** (better-sqlite3
   you've actually entered. Date + topic filters combine.
 - **Sort** by due date, priority, title, or created; ascending/descending.
   Optional **group-by-topic** view. Search box.
+- **Manual reordering:** in the default due-date view (and grouped view), drag a
+  task by its handle to reorder tasks **that share the same due date**. The order
+  persists (a per-task `position` used as the same-date tiebreaker). Cross-date
+  drags snap back — the date sort always wins. New tasks append to the end of
+  their day.
 - **Recurring tasks** (daily/weekly/monthly): completing one spawns the next
   occurrence automatically.
 - **Notifications** for tasks due today or overdue (toggleable).

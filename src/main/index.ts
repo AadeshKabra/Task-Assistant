@@ -3,6 +3,7 @@
 
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
+import { existsSync } from 'fs'
 import { initDb } from './db'
 import { initSettings, getSettings, getBounds, saveBounds } from './settings'
 import { registerIpc, broadcastSettings } from './ipc'
@@ -24,6 +25,11 @@ function createWindow(): void {
   const bounds = getBounds()
   const settings = getSettings()
 
+  // Window/taskbar icon in dev. In the packaged app the exe icon (set by
+  // electron-builder) is used; guarded so a missing file is a harmless no-op.
+  const iconPath = join(__dirname, '../../build/icon.ico')
+  const icon = existsSync(iconPath) ? iconPath : undefined
+
   mainWindow = new BrowserWindow({
     width: bounds.width,
     height: bounds.height,
@@ -34,6 +40,7 @@ function createWindow(): void {
     show: false,
     frame: false, // frameless — custom minimal chrome drawn in the renderer
     backgroundColor: '#1e1f24',
+    icon,
     alwaysOnTop: settings.alwaysOnTop,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

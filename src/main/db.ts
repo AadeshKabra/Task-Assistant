@@ -19,6 +19,7 @@ interface Row {
   notes: string
   completed: number
   recurrence: Recurrence
+  position: number
   created_at: string
   updated_at: string
   completed_at: string | null
@@ -35,6 +36,7 @@ function rowToTask(r: Row): Task {
     notes: r.notes,
     completed: r.completed === 1,
     recurrence: r.recurrence,
+    position: r.position,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     completedAt: r.completed_at
@@ -58,6 +60,7 @@ export function initDb(): void {
       notes        TEXT    NOT NULL DEFAULT '',
       completed    INTEGER NOT NULL DEFAULT 0,
       recurrence   TEXT    NOT NULL DEFAULT 'none',
+      position     REAL    NOT NULL DEFAULT 0,
       created_at   TEXT    NOT NULL,
       updated_at   TEXT    NOT NULL,
       completed_at TEXT
@@ -65,6 +68,17 @@ export function initDb(): void {
     CREATE INDEX IF NOT EXISTS idx_tasks_due   ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_topic ON tasks(topic);
   `)
+  migrate()
+}
+
+/** Additive migrations for databases created by earlier versions. */
+function migrate(): void {
+  const cols = db.prepare(`PRAGMA table_info(tasks)`).all() as { name: string }[]
+  if (!cols.some((c) => c.name === 'position')) {
+    db.exec(`ALTER TABLE tasks ADD COLUMN position REAL NOT NULL DEFAULT 0`)
+    // Seed a stable initial order (by id) so existing tasks keep a sane sequence.
+    db.exec(`UPDATE tasks SET position = id`)
+  }
 }
 
 function nowIso(): string {
@@ -83,12 +97,17 @@ export function getTask(id: number): Task | null {
 
 export function createTask(input: TaskInput): Task {
   const ts = nowIso()
+  // New tasks append to the end of the manual order (highest position). Within
+  // their due-date cluster this places them last; the user can drag to reorder.
+  const maxPos = (db.prepare(`SELECT COALESCE(MAX(position), 0) AS m FROM tasks`).get() as {
+    m: number
+  }).m
   const info = db
     .prepare(
       `INSERT INTO tasks
-        (title, topic, due_date, due_time, priority, notes, recurrence, completed, created_at, updated_at)
+        (title, topic, due_date, due_time, priority, notes, recurrence, position, completed, created_at, updated_at)
        VALUES
-        (@title, @topic, @dueDate, @dueTime, @priority, @notes, @recurrence, 0, @ts, @ts)`
+        (@title, @topic, @dueDate, @dueTime, @priority, @notes, @recurrence, @position, 0, @ts, @ts)`
     )
     .run({
       title: input.title.trim(),
@@ -98,9 +117,24 @@ export function createTask(input: TaskInput): Task {
       priority: input.priority ?? 'medium',
       notes: input.notes ?? '',
       recurrence: input.recurrence ?? 'none',
+      position: maxPos + 1,
       ts
     })
   return getTask(Number(info.lastInsertRowid))!
+}
+
+/**
+ * Persist a manual order for a set of task ids (a same-due-date cluster passed
+ * in the desired top-to-bottom order). Assigns sequential positions. Because
+ * `position` only breaks ties *within* a due date, renumbering one cluster never
+ * disturbs the order of tasks on other dates.
+ */
+export function reorderTasks(orderedIds: number[]): void {
+  const stmt = db.prepare(`UPDATE tasks SET position = @pos WHERE id = @id`)
+  const tx = db.transaction((ids: number[]) => {
+    ids.forEach((id, i) => stmt.run({ pos: i, id }))
+  })
+  tx(orderedIds)
 }
 
 export function updateTask(id: number, patch: TaskPatch): Task | null {

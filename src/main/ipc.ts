@@ -9,7 +9,8 @@ import {
   updateTask,
   deleteTask,
   setCompleted,
-  listTopics
+  listTopics,
+  reorderTasks
 } from './db'
 import { getSettings, updateSettings } from './settings'
 import { resetNotified } from './notifications'
@@ -49,6 +50,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     setCompleted(id, completed)
   )
   ipcMain.handle('tasks:topics', () => listTopics())
+  ipcMain.handle('tasks:reorder', (_e, orderedIds: number[]) => reorderTasks(orderedIds))
 
   ipcMain.handle('settings:get', () => getSettings())
   ipcMain.handle('settings:update', (_e, patch: Partial<Settings>) => {

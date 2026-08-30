@@ -13,7 +13,8 @@ const api: Api = {
     remove: (id: number) => ipcRenderer.invoke('tasks:remove', id),
     setCompleted: (id: number, completed: boolean) =>
       ipcRenderer.invoke('tasks:setCompleted', id, completed),
-    topics: () => ipcRenderer.invoke('tasks:topics')
+    topics: () => ipcRenderer.invoke('tasks:topics'),
+    reorder: (orderedIds: number[]) => ipcRenderer.invoke('tasks:reorder', orderedIds)
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),

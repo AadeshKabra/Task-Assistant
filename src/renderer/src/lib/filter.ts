@@ -57,7 +57,9 @@ function compareBy(a: Task, b: Task, key: SortKey): number {
       const av = a.dueDate ?? '9999-99-99'
       const bv = b.dueDate ?? '9999-99-99'
       if (av !== bv) return av < bv ? -1 : 1
-      // Same date: earlier time first, then higher priority.
+      // Same date: honor the user's manual order (drag-and-drop), then time,
+      // then priority as final tiebreakers.
+      if (a.position !== b.position) return a.position - b.position
       const at = a.dueTime ?? '99:99'
       const bt = b.dueTime ?? '99:99'
       if (at !== bt) return at < bt ? -1 : 1

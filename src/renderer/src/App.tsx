@@ -91,14 +91,26 @@ export default function App(): JSX.Element {
   )
   const handleDelete = useCallback(
     async (id: number) => {
+      // Permanent hard-delete from the SQLite DB — confirm first (no undo).
+      const task = tasks.find((t) => t.id === id)
+      const label = task ? `"${task.title}"` : 'this task'
+      const ok = window.confirm(`Delete ${label} permanently? This cannot be undone.`)
+      if (!ok) return
       await window.api.tasks.remove(id)
       await reload()
     },
-    [reload]
+    [tasks, reload]
   )
   const handleToggle = useCallback(
     async (task: Task) => {
       await window.api.tasks.setCompleted(task.id, !task.completed)
+      await reload()
+    },
+    [reload]
+  )
+  const handleReorder = useCallback(
+    async (orderedIds: number[]) => {
+      await window.api.tasks.reorder(orderedIds)
       await reload()
     },
     [reload]
@@ -154,9 +166,11 @@ export default function App(): JSX.Element {
           groups={groups}
           now={now}
           strikeCompleted={settings?.showCompleted ?? false}
+          reorderable={filter.sortKey === 'dueDate' && filter.sortDir === 'asc'}
           onToggle={handleToggle}
           onEdit={openEdit}
           onDelete={handleDelete}
+          onReorder={handleReorder}
         />
       </main>
 
