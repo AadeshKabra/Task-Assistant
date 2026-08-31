@@ -5,8 +5,11 @@ import { filterTasks, sortTasks, groupByTopic, type FilterState } from './lib/fi
 import Header from './components/Header'
 import FilterBar from './components/FilterBar'
 import TaskList from './components/TaskList'
+import WeekView from './components/WeekView'
 import TaskForm from './components/TaskForm'
 import SettingsPanel from './components/SettingsPanel'
+
+type View = 'list' | 'week'
 
 const DEFAULT_FILTER: FilterState = {
   dateBuckets: new Set(),
@@ -34,6 +37,7 @@ export default function App(): JSX.Element {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [filter, setFilter] = useState<FilterState>(DEFAULT_FILTER)
   const [groupBy, setGroupBy] = useState(false)
+  const [view, setView] = useState<View>('list')
 
   const [editing, setEditing] = useState<Task | null>(null)
   const [formOpen, setFormOpen] = useState(false)
@@ -133,6 +137,13 @@ export default function App(): JSX.Element {
 
   const groups = useMemo(() => (groupBy ? groupByTopic(visible) : null), [groupBy, visible])
 
+  // Week view: same topic/search/showCompleted filtering, but date buckets and
+  // sort don't apply — WeekView arranges tasks by weekday itself.
+  const weekTasks = useMemo(
+    () => filterTasks(tasks, { ...filter, dateBuckets: new Set() }, now),
+    [tasks, filter, now]
+  )
+
   const openAdd = (): void => {
     setEditing(null)
     setFormOpen(true)
@@ -152,26 +163,53 @@ export default function App(): JSX.Element {
         onMinimize={() => window.api.window.minimize()}
       />
 
+      <nav className="tabbar no-drag">
+        <button
+          className={`tab ${view === 'list' ? 'tab-on' : ''}`}
+          onClick={() => setView('list')}
+        >
+          All tasks
+        </button>
+        <button
+          className={`tab ${view === 'week' ? 'tab-on' : ''}`}
+          onClick={() => setView('week')}
+        >
+          This week
+        </button>
+      </nav>
+
       <FilterBar
         filter={filter}
         onChange={setFilter}
         topics={topics}
         groupBy={groupBy}
         onToggleGroupBy={() => setGroupBy((g) => !g)}
+        showDateAndSort={view === 'list'}
       />
 
       <main className="content">
-        <TaskList
-          tasks={visible}
-          groups={groups}
-          now={now}
-          strikeCompleted={settings?.showCompleted ?? false}
-          reorderable={filter.sortKey === 'dueDate' && filter.sortDir === 'asc'}
-          onToggle={handleToggle}
-          onEdit={openEdit}
-          onDelete={handleDelete}
-          onReorder={handleReorder}
-        />
+        {view === 'list' ? (
+          <TaskList
+            tasks={visible}
+            groups={groups}
+            now={now}
+            strikeCompleted={settings?.showCompleted ?? false}
+            reorderable={filter.sortKey === 'dueDate' && filter.sortDir === 'asc'}
+            onToggle={handleToggle}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            onReorder={handleReorder}
+          />
+        ) : (
+          <WeekView
+            tasks={weekTasks}
+            now={now}
+            strikeCompleted={settings?.showCompleted ?? false}
+            onToggle={handleToggle}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+          />
+        )}
       </main>
 
       {formOpen && (

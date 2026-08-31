@@ -8,6 +8,8 @@ interface Props {
   topics: string[]
   groupBy: boolean
   onToggleGroupBy: () => void
+  /** Hide date presets + sort/group controls (used by the Week view). */
+  showDateAndSort?: boolean
 }
 
 const DATE_PRESETS: { key: DateBucket; label: string }[] = [
@@ -30,7 +32,8 @@ export default function FilterBar({
   onChange,
   topics,
   groupBy,
-  onToggleGroupBy
+  onToggleGroupBy,
+  showDateAndSort = true
 }: Props): JSX.Element {
   const toggleBucket = (b: DateBucket): void => {
     const next = new Set(filter.dateBuckets)
@@ -46,18 +49,20 @@ export default function FilterBar({
 
   return (
     <div className="filterbar no-drag">
-      {/* Date presets (multi-select) */}
-      <div className="chip-row">
-        {DATE_PRESETS.map((p) => (
-          <button
-            key={p.key}
-            className={`chip ${filter.dateBuckets.has(p.key) ? 'chip-on' : ''} chip-${p.key}`}
-            onClick={() => toggleBucket(p.key)}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+      {/* Date presets (multi-select) — not shown in the Week view. */}
+      {showDateAndSort && (
+        <div className="chip-row">
+          {DATE_PRESETS.map((p) => (
+            <button
+              key={p.key}
+              className={`chip ${filter.dateBuckets.has(p.key) ? 'chip-on' : ''} chip-${p.key}`}
+              onClick={() => toggleBucket(p.key)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Topic filter (multi-select). "All topics" clears the selection. */}
       {topics.length > 0 && (
@@ -90,37 +95,41 @@ export default function FilterBar({
           onChange={(e) => onChange({ ...filter, search: e.target.value })}
         />
 
-        <label className="control-label">
-          Sort
-          <select
-            value={filter.sortKey}
-            onChange={(e) => onChange({ ...filter, sortKey: e.target.value as SortKey })}
-          >
-            {SORTS.map((s) => (
-              <option key={s.key} value={s.key}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        {showDateAndSort && (
+          <>
+            <label className="control-label">
+              Sort
+              <select
+                value={filter.sortKey}
+                onChange={(e) => onChange({ ...filter, sortKey: e.target.value as SortKey })}
+              >
+                {SORTS.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <button
-          className="icon-btn"
-          title={filter.sortDir === 'asc' ? 'Ascending' : 'Descending'}
-          onClick={() =>
-            onChange({ ...filter, sortDir: filter.sortDir === 'asc' ? 'desc' : 'asc' })
-          }
-        >
-          {filter.sortDir === 'asc' ? '↑' : '↓'}
-        </button>
+            <button
+              className="icon-btn"
+              title={filter.sortDir === 'asc' ? 'Ascending' : 'Descending'}
+              onClick={() =>
+                onChange({ ...filter, sortDir: filter.sortDir === 'asc' ? 'desc' : 'asc' })
+              }
+            >
+              {filter.sortDir === 'asc' ? '↑' : '↓'}
+            </button>
 
-        <button
-          className={`toggle-btn ${groupBy ? 'toggle-on' : ''}`}
-          onClick={onToggleGroupBy}
-          title="Group by topic"
-        >
-          Group
-        </button>
+            <button
+              className={`toggle-btn ${groupBy ? 'toggle-on' : ''}`}
+              onClick={onToggleGroupBy}
+              title="Group by topic"
+            >
+              Group
+            </button>
+          </>
+        )}
 
         <button
           className={`toggle-btn ${filter.showCompleted ? 'toggle-on' : ''}`}

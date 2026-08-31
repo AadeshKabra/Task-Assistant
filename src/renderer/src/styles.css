@@ -154,6 +154,31 @@ button {
   color: var(--danger);
 }
 
+/* ---- Tab bar ------------------------------------------------------------- */
+.tabbar {
+  display: flex;
+  gap: 2px;
+  padding: 6px 10px 0;
+  background: var(--surface);
+}
+.tab {
+  padding: 6px 14px;
+  border-radius: 8px 8px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+.tab:hover {
+  color: var(--text);
+}
+.tab-on {
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--border);
+}
+
 /* ---- Filter bar ---------------------------------------------------------- */
 .filterbar {
   padding: 8px 10px;
@@ -426,6 +451,76 @@ input[type='time'] {
   letter-spacing: 0.05em;
   color: var(--text-dim);
   margin: 0 0 6px 2px;
+}
+
+/* ---- Week view ----------------------------------------------------------- */
+.weekview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.week-range {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 2px 2px 4px;
+}
+.week-range-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+.week-range-dates {
+  font-size: 14px;
+  font-weight: 700;
+}
+.week-day {
+  border-left: 2px solid var(--border);
+  padding-left: 8px;
+}
+.week-day.week-today {
+  border-left-color: var(--accent);
+}
+.week-day.week-carried {
+  border-left-color: var(--overdue);
+}
+.week-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.week-day-name {
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.week-today-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-text);
+  background: var(--accent);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+.week-day-date,
+.week-day-count {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.week-carried .week-day-name {
+  color: var(--overdue);
+}
+.week-day-empty {
+  margin: 0 0 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+  opacity: 0.5;
 }
 
 /* ---- Empty state --------------------------------------------------------- */

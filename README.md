@@ -27,6 +27,12 @@ Built with **Electron + React + TypeScript**, data in **SQLite** (better-sqlite3
   persists (a per-task `position` used as the same-date tiebreaker). Cross-date
   drags snap back — the date sort always wins. New tasks append to the end of
   their day.
+- **Two views** via tabs: **All tasks** (the filterable/sortable list) and
+  **This week** — a single rolling weekly planner. The week (Mon–Sun) and its
+  dates update automatically as time passes, tasks sit under their weekday, and
+  **incomplete tasks from earlier weeks carry forward** into a "Carried over"
+  section so nothing is lost (a display roll-forward — original due dates are
+  never rewritten).
 - **Recurring tasks** (daily/weekly/monthly): completing one spawns the next
   occurrence automatically.
 - **Notifications** for tasks due today or overdue (toggleable).

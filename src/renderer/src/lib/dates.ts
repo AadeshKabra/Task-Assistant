@@ -12,6 +12,14 @@ export function isoDate(d: Date = new Date()): string {
   ).padStart(2, '0')}`
 }
 
+/** ISO date of the Monday starting the current week (weeks run Monday–Sunday). */
+export function startOfWeekIso(today: Date = new Date()): string {
+  const d = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const daysSinceMonday = (d.getDay() + 6) % 7 // Mon=0 … Sun=6
+  d.setDate(d.getDate() - daysSinceMonday)
+  return isoDate(d)
+}
+
 /** ISO date of the Sunday ending the current week (weeks run Monday–Sunday). */
 export function endOfWeekIso(today: Date = new Date()): string {
   const d = new Date(today.getFullYear(), today.getMonth(), today.getDate())
