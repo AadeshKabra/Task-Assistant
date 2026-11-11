@@ -67,9 +67,12 @@ export interface Api {
     update(id: number, patch: TaskPatch): Promise<Task | null>
     remove(id: number): Promise<boolean>
     setCompleted(id: number, completed: boolean): Promise<Task | null>
+    /** Distinct topics in the user's chosen display order. */
     topics(): Promise<string[]>
     /** Persist a manual order for a set of tasks (a same-due-date cluster). */
     reorder(orderedIds: number[]): Promise<void>
+    /** Persist the display order of topics (full list, top to bottom). */
+    reorderTopics(ordered: string[]): Promise<void>
   }
   settings: {
     get(): Promise<Settings>
@@ -78,7 +81,12 @@ export interface Api {
   window: {
     minimize(): void
     hide(): void
+    /** Maximize the window, or restore it to its normal size if maximized. */
+    toggleMaximize(): void
+    isMaximized(): Promise<boolean>
   }
+  /** Fired when the window is maximized or restored (by any means). */
+  onMaximizedChanged(cb: (maximized: boolean) => void): () => void
   /** Fired by the main process when settings change elsewhere (e.g. via tray). */
   onSettingsChanged(cb: (settings: Settings) => void): () => void
   /** Fired when the user picks "Settings" from the tray menu. */

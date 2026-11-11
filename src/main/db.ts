@@ -67,6 +67,13 @@ export function initDb(): void {
     );
     CREATE INDEX IF NOT EXISTS idx_tasks_due   ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_topic ON tasks(topic);
+
+    -- User-chosen display order of topics (chips + grouped view). Topics with
+    -- no row here sort after ordered ones, alphabetically.
+    CREATE TABLE IF NOT EXISTS topic_order (
+      topic    TEXT    PRIMARY KEY,
+      position INTEGER NOT NULL
+    );
   `)
   migrate()
 }
@@ -199,12 +206,30 @@ export function setCompleted(id: number, completed: boolean): Task | null {
   return getTask(id)
 }
 
-/** Distinct non-empty topics across all tasks, alphabetical (case-insensitive). */
+/**
+ * Distinct non-empty topics across all tasks, in the user's chosen order.
+ * Topics never explicitly ordered come last, alphabetical (case-insensitive).
+ */
 export function listTopics(): string[] {
   const rows = db
-    .prepare(`SELECT DISTINCT topic FROM tasks WHERE topic <> '' ORDER BY topic COLLATE NOCASE`)
+    .prepare(
+      `SELECT t.topic, o.position AS pos
+         FROM (SELECT DISTINCT topic FROM tasks WHERE topic <> '') t
+         LEFT JOIN topic_order o ON o.topic = t.topic
+        ORDER BY pos IS NULL, pos, t.topic COLLATE NOCASE`
+    )
     .all() as { topic: string }[]
   return rows.map((r) => r.topic)
+}
+
+/** Replace the stored topic order with the given top-to-bottom list. */
+export function reorderTopics(ordered: string[]): void {
+  const insert = db.prepare(`INSERT INTO topic_order (topic, position) VALUES (?, ?)`)
+  const tx = db.transaction((names: string[]) => {
+    db.exec(`DELETE FROM topic_order`)
+    names.forEach((name, i) => insert.run(name, i))
+  })
+  tx([...new Set(ordered)])
 }
 
 /** Advance an ISO date string by one recurrence step, returning ISO date. */

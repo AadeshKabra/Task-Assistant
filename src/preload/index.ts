@@ -14,7 +14,8 @@ const api: Api = {
     setCompleted: (id: number, completed: boolean) =>
       ipcRenderer.invoke('tasks:setCompleted', id, completed),
     topics: () => ipcRenderer.invoke('tasks:topics'),
-    reorder: (orderedIds: number[]) => ipcRenderer.invoke('tasks:reorder', orderedIds)
+    reorder: (orderedIds: number[]) => ipcRenderer.invoke('tasks:reorder', orderedIds),
+    reorderTopics: (ordered: string[]) => ipcRenderer.invoke('tasks:reorderTopics', ordered)
   },
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
@@ -22,7 +23,14 @@ const api: Api = {
   },
   window: {
     minimize: () => ipcRenderer.send('window:minimize'),
-    hide: () => ipcRenderer.send('window:hide')
+    hide: () => ipcRenderer.send('window:hide'),
+    toggleMaximize: () => ipcRenderer.send('window:toggleMaximize'),
+    isMaximized: () => ipcRenderer.invoke('window:isMaximized')
+  },
+  onMaximizedChanged: (cb) => {
+    const listener = (_e: unknown, maximized: boolean): void => cb(maximized)
+    ipcRenderer.on('window:maximized-changed', listener)
+    return () => ipcRenderer.removeListener('window:maximized-changed', listener)
   },
   onSettingsChanged: (cb) => {
     const listener = (_e: unknown, settings: Settings): void => cb(settings)

@@ -82,8 +82,13 @@ export interface TopicGroup {
   tasks: Task[]
 }
 
-/** Group an already-sorted list by topic, preserving order; untopiced last. */
-export function groupByTopic(tasks: Task[]): TopicGroup[] {
+/**
+ * Group an already-sorted list by topic, preserving task order within each
+ * group. Groups follow `topicOrder` (the user's chosen order); topics missing
+ * from it fall back to alphabetical after the ordered ones; untopiced last.
+ */
+export function groupByTopic(tasks: Task[], topicOrder: string[] = []): TopicGroup[] {
+  const rank = new Map(topicOrder.map((t, i) => [t, i]))
   const map = new Map<string, Task[]>()
   for (const t of tasks) {
     const key = t.topic || ''
@@ -94,6 +99,9 @@ export function groupByTopic(tasks: Task[]): TopicGroup[] {
   groups.sort((a, b) => {
     if (a.topic === '') return 1
     if (b.topic === '') return -1
+    const ar = rank.get(a.topic) ?? Infinity
+    const br = rank.get(b.topic) ?? Infinity
+    if (ar !== br) return ar - br
     return a.topic.localeCompare(b.topic)
   })
   return groups

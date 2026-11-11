@@ -10,7 +10,8 @@ import {
   deleteTask,
   setCompleted,
   listTopics,
-  reorderTasks
+  reorderTasks,
+  reorderTopics
 } from './db'
 import { getSettings, updateSettings } from './settings'
 import { resetNotified } from './notifications'
@@ -51,6 +52,7 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   )
   ipcMain.handle('tasks:topics', () => listTopics())
   ipcMain.handle('tasks:reorder', (_e, orderedIds: number[]) => reorderTasks(orderedIds))
+  ipcMain.handle('tasks:reorderTopics', (_e, ordered: string[]) => reorderTopics(ordered))
 
   ipcMain.handle('settings:get', () => getSettings())
   ipcMain.handle('settings:update', (_e, patch: Partial<Settings>) => {
@@ -61,4 +63,11 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
 
   ipcMain.on('window:minimize', () => getWindow()?.minimize())
   ipcMain.on('window:hide', () => getWindow()?.hide())
+  ipcMain.on('window:toggleMaximize', () => {
+    const win = getWindow()
+    if (!win) return
+    if (win.isMaximized()) win.unmaximize()
+    else win.maximize()
+  })
+  ipcMain.handle('window:isMaximized', () => getWindow()?.isMaximized() ?? false)
 }

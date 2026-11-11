@@ -14,6 +14,8 @@ interface Props {
   onEdit: (task: Task) => void
   onDelete: (id: number) => void
   onReorder: (orderedIds: number[]) => void
+  /** Move a topic group up (-1) or down (+1) among the visible groups. */
+  onMoveTopic: (topic: string, dir: -1 | 1, visibleOrder: string[]) => void
 }
 
 const sameDate = (a: Task, b: Task): boolean => (a.dueDate ?? null) === (b.dueDate ?? null)
@@ -27,7 +29,8 @@ export default function TaskList({
   onToggle,
   onEdit,
   onDelete,
-  onReorder
+  onReorder,
+  onMoveTopic
 }: Props): JSX.Element {
   const [draggingId, setDraggingId] = useState<number | null>(null)
   const [dropTargetId, setDropTargetId] = useState<number | null>(null)
@@ -107,14 +110,41 @@ export default function TaskList({
   }
 
   if (groups) {
+    // "No topic" is pinned last, so only real topics are movable.
+    const movable = groups.map((g) => g.topic).filter((t) => t !== '')
     return (
       <div className="grouped">
-        {groups.map((g) => (
+        {groups.map((g) => {
+          const idx = movable.indexOf(g.topic)
+          return (
           <section key={g.topic || '__none__'} className="group">
-            <h2 className="group-title">{g.topic || 'No topic'}</h2>
+            <div className="group-head">
+              <h2 className="group-title">{g.topic || 'No topic'}</h2>
+              {g.topic !== '' && movable.length > 1 && (
+                <div className="group-move">
+                  <button
+                    className="icon-btn"
+                    title="Move topic up"
+                    disabled={idx <= 0}
+                    onClick={() => onMoveTopic(g.topic, -1, movable)}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    className="icon-btn"
+                    title="Move topic down"
+                    disabled={idx >= movable.length - 1}
+                    onClick={() => onMoveTopic(g.topic, 1, movable)}
+                  >
+                    ↓
+                  </button>
+                </div>
+              )}
+            </div>
             <ul className="task-list">{g.tasks.map((t) => renderItem(t, g.tasks))}</ul>
           </section>
-        ))}
+          )
+        })}
       </div>
     )
   }

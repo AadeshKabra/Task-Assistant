@@ -1,5 +1,48 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { Task } from '@shared/types'
 import { bucketOf, formatDueLabel } from '../lib/dates'
+
+/**
+ * Task notes clamped to two lines. A "Show more" toggle appears only when the
+ * text actually overflows (re-measured on resize / note edits).
+ */
+function TaskNotes({ notes }: { notes: string }): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [overflows, setOverflows] = useState(false)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = (): void => {
+      // Only measurable while clamped; keep the last result while expanded.
+      if (!el.classList.contains('task-notes-clamped')) return
+      setOverflows(el.scrollHeight > el.clientHeight + 1)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [notes, expanded])
+
+  return (
+    <>
+      <div ref={ref} className={`task-notes ${expanded ? '' : 'task-notes-clamped'}`}>
+        {notes}
+      </div>
+      {(overflows || expanded) && (
+        <button
+          className="notes-toggle"
+          onClick={() => setExpanded((x) => !x)}
+          onDoubleClick={(e) => e.stopPropagation()}
+          aria-expanded={expanded}
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </>
+  )
+}
 
 interface Props {
   task: Task
@@ -92,7 +135,7 @@ export default function TaskItem({
             <span className="task-flag">Overdue</span>
           )}
         </div>
-        {task.notes && <div className="task-notes">{task.notes}</div>}
+        {task.notes && <TaskNotes notes={task.notes} />}
       </div>
 
       <div className="task-actions">

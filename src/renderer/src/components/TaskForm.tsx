@@ -127,7 +127,7 @@ export default function TaskForm({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            rows={3}
+            rows={6}
             placeholder="Optional details…"
           />
         </label>

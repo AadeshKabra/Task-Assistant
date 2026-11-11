@@ -54,17 +54,27 @@ function createWindow(): void {
 
   // Persist size/position (debounced) whenever the user moves or resizes.
   let saveTimer: NodeJS.Timeout | null = null
+  // Maximized/minimized geometry is never saved, so the app always reopens as
+  // the user's normal small window.
   const remember = (): void => {
-    if (!mainWindow || mainWindow.isMinimized()) return
+    if (!mainWindow || mainWindow.isMinimized() || mainWindow.isMaximized()) return
     if (saveTimer) clearTimeout(saveTimer)
     saveTimer = setTimeout(() => {
-      if (!mainWindow) return
+      if (!mainWindow || mainWindow.isMinimized() || mainWindow.isMaximized()) return
       const b = mainWindow.getBounds()
       saveBounds({ x: b.x, y: b.y, width: b.width, height: b.height })
     }, 400)
   }
   mainWindow.on('resize', remember)
   mainWindow.on('move', remember)
+
+  // Keep the renderer's maximize/restore button icon in sync (also covers
+  // Win+Up, Aero Snap and double-clicking the header drag region).
+  const sendMaximized = (): void => {
+    mainWindow?.webContents.send('window:maximized-changed', mainWindow.isMaximized())
+  }
+  mainWindow.on('maximize', sendMaximized)
+  mainWindow.on('unmaximize', sendMaximized)
 
   // Closing the window hides it to the tray; the app keeps running. Real quit
   // goes through the tray "Quit" item (or app.quit), which sets isQuitting.

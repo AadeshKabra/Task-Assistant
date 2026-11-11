@@ -120,6 +120,27 @@ export default function App(): JSX.Element {
     [reload]
   )
 
+  /**
+   * Move a topic one step up/down relative to its neighbour in `visibleOrder`
+   * (the groups currently on screen), then persist the full topic list.
+   */
+  const handleMoveTopic = useCallback(
+    async (topic: string, dir: -1 | 1, visibleOrder: string[]) => {
+      const i = visibleOrder.indexOf(topic)
+      const neighbour = visibleOrder[i + dir]
+      if (i === -1 || neighbour === undefined) return
+      const next = [...topics]
+      const a = next.indexOf(topic)
+      const b = next.indexOf(neighbour)
+      if (a === -1 || b === -1) return
+      ;[next[a], next[b]] = [next[b], next[a]]
+      setTopics(next) // optimistic — keeps the UI snappy
+      await window.api.tasks.reorderTopics(next)
+      await reload()
+    },
+    [topics, reload]
+  )
+
   const handleSettings = useCallback(async (patch: Partial<Settings>) => {
     const next = await window.api.settings.update(patch)
     setSettings(next)
@@ -135,7 +156,10 @@ export default function App(): JSX.Element {
     return sortTasks(filtered, filter, now)
   }, [tasks, filter, now])
 
-  const groups = useMemo(() => (groupBy ? groupByTopic(visible) : null), [groupBy, visible])
+  const groups = useMemo(
+    () => (groupBy ? groupByTopic(visible, topics) : null),
+    [groupBy, visible, topics]
+  )
 
   // Week view: same topic/search/showCompleted filtering, but date buckets and
   // sort don't apply — WeekView arranges tasks by weekday itself.
@@ -199,6 +223,7 @@ export default function App(): JSX.Element {
             onEdit={openEdit}
             onDelete={handleDelete}
             onReorder={handleReorder}
+            onMoveTopic={handleMoveTopic}
           />
         ) : (
           <WeekView
