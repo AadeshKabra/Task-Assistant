@@ -39,6 +39,15 @@ export function bucketOf(task: Task, now: Date = new Date()): DateBucket {
   return 'later'
 }
 
+/** Whole days between an overdue task's due date and today; 0 if not overdue. */
+export function daysOverdue(task: Task, now: Date = new Date()): number {
+  if (!task.dueDate) return 0
+  const [y, m, d] = task.dueDate.split('-').map(Number)
+  const due = new Date(y, m - 1, d)
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return Math.max(0, Math.round((today.getTime() - due.getTime()) / 86_400_000))
+}
+
 const PRIORITY_RANK: Record<Priority, number> = { high: 0, medium: 1, low: 2 }
 export function priorityRank(p: Priority): number {
   return PRIORITY_RANK[p]

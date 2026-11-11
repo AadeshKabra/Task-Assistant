@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-11T05:58:42Z",
+  "title": "Design System: Task Assistant",
+  "extensions": {
+    "colorMeta": {
+      "signal-blue": { "role": "primary", "displayName": "Signal Blue", "canonical": "#3b82f6", "darkModeValue": "#4f8cf7", "tonalRamp": ["#0c2040", "#063889", "#0950c3", "#156af4", "#4f8ff7", "#8ab4fa", "#c4dafc", "#eaf0fb"] },
+      "canvas": { "role": "neutral", "displayName": "Canvas", "canonical": "#f4f5f7", "darkModeValue": "#1a1b1f", "tonalRamp": ["#22252b", "#3c4453", "#566176", "#717e98", "#959eb2", "#b8bfcb", "#dcdfe5", "#f1f2f4"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#ffffff", "darkModeValue": "#24262b", "tonalRamp": ["#262626", "#474747", "#666666", "#858585", "#a3a3a3", "#c2c2c2", "#e0e0e0", "#f2f2f2"] },
+      "panel-dim": { "role": "neutral", "displayName": "Panel Dim", "canonical": "#eef0f3", "darkModeValue": "#2c2f36", "tonalRamp": ["#21252b", "#3b4554", "#546278", "#6f809a", "#93a0b3", "#b7c0cc", "#dbdfe6", "#f1f2f4"] },
+      "hairline": { "role": "neutral", "displayName": "Hairline", "canonical": "#dcdfe4", "darkModeValue": "#383b42", "tonalRamp": ["#23252a", "#3e4551", "#596373", "#758194", "#97a0af", "#bac0ca", "#dcdfe4", "#f1f2f3"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#1e1f24", "darkModeValue": "#e7e9ee", "tonalRamp": ["#242529", "#41434e", "#5d606f", "#797d90", "#9b9eac", "#bcbec7", "#dedfe3", "#f1f2f3"] },
+      "ink-dim": { "role": "neutral", "displayName": "Ink Dim", "canonical": "#6b7280", "darkModeValue": "#9aa0ab", "tonalRamp": ["#242529", "#41454e", "#5d636f", "#7a8190", "#9ba0ab", "#bcc0c7", "#dedfe3", "#f1f2f3"] },
+      "alert-overdue": { "role": "semantic-danger", "displayName": "Alert / Overdue", "canonical": "#dc2626", "darkModeValue": "#f87171", "tonalRamp": ["#3b1212", "#7b1414", "#b01c1c", "#dd2c2c", "#e66161", "#ee9696", "#f6caca", "#f9ebeb"] },
+      "amber-today": { "role": "semantic-warning", "displayName": "Amber Today", "canonical": "#d97706", "darkModeValue": "#fbbf24", "tonalRamp": ["#41280b", "#8b4c04", "#c76d05", "#f88d11", "#faa94c", "#fcc688", "#fde2c3", "#fbf3e9"] },
+      "olive-soon": { "role": "semantic-warning", "displayName": "Olive Soon", "canonical": "#ca8a04", "darkModeValue": "#facc15", "tonalRamp": ["#42300b", "#8c6003", "#c88904", "#faae0f", "#fbc24b", "#fdd787", "#feebc3", "#fbf5e9"] },
+      "horizon-later": { "role": "semantic-info", "displayName": "Horizon Later", "canonical": "#2563eb", "darkModeValue": "#60a5fa", "tonalRamp": ["#0e1d3e", "#0c3183", "#1146bb", "#1f5fea", "#5787f0", "#8faff5", "#c7d7fa", "#eaeffa"] },
+      "done-gray": { "role": "neutral", "displayName": "Done Gray", "canonical": "#9ca3af", "darkModeValue": "#6b7280", "tonalRamp": ["#232529", "#40454f", "#5b6371", "#788192", "#99a1ad", "#bbc0c8", "#dde0e4", "#f1f2f3"] },
+      "priority-high": { "role": "semantic-danger", "displayName": "Priority High", "canonical": "#ef4444", "darkModeValue": "#f87171", "tonalRamp": ["#3e0e0e", "#840b0b", "#bc1010", "#ec1d1d", "#f15656", "#f58e8e", "#fac7c7", "#faeaea"] },
+      "priority-medium": { "role": "semantic-warning", "displayName": "Priority Medium", "canonical": "#f59e0b", "darkModeValue": "#fbbf24", "tonalRamp": ["#412d0c", "#895806", "#c47e08", "#f5a214", "#f8b94f", "#fad089", "#fde8c4", "#fbf5e9"] },
+      "priority-low": { "role": "semantic-success", "displayName": "Priority Low", "canonical": "#10b981", "darkModeValue": "#34d399", "tonalRamp": ["#0e3e2e", "#0b835c", "#10bc83", "#1eeca7", "#56f0bd", "#8ef5d3", "#c7fae9", "#eafaf5"] }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Modal headers and topic group headers." },
+      "headline": { "displayName": "Headline", "purpose": "The header's live date and the week-range dates." },
+      "body": { "displayName": "Body", "purpose": "Task titles, default copy, and field input text." },
+      "label": { "displayName": "Label", "purpose": "Tabs, chips, search, toggles, control labels, field captions. Also covers the 9-11px uppercase eyebrow variant used for badges, flags, and section titles." }
+    },
+    "shadows": [
+      { "name": "hover-lift", "value": "0 1px 6px var(--shadow)", "purpose": "Task-card hover only; the sole resting-state shadow exception." },
+      { "name": "overlay-lift", "value": "0 8px 30px var(--shadow)", "purpose": "Modal, floating over a rgba(0,0,0,0.45) backdrop scrim." }
+    ],
+    "motion": [
+      { "name": "fade-quick", "value": "0.1s ease", "purpose": "Drag-handle and row-action opacity reveals on hover; the only motion in the system." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled, high-emphasis action (e.g. '+ Add').",
+      "html": "<button class=\"ds-btn-primary\">+ Add</button>",
+      "css": ".ds-btn-primary { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 500; padding: 5px 12px; border-radius: 6px; background: var(--accent); color: var(--accent-text); border: 1px solid var(--accent); cursor: pointer; transition: filter 0.1s ease; } .ds-btn-primary:hover { filter: brightness(1.08); } .ds-btn-primary:disabled { opacity: 0.5; cursor: default; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Low-emphasis action (Cancel, Save in a modal footer).",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 13px; font-weight: 500; padding: 5px 12px; border-radius: 6px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); cursor: pointer; } .ds-btn-secondary:hover { background: var(--border); }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "icon-button",
+      "description": "26x26px square glyph button for window controls and row actions. Uses a plain Unicode character, never an icon set.",
+      "html": "<button class=\"ds-icon-btn\" aria-label=\"Settings\">⚙</button>",
+      "css": ".ds-icon-btn { width: 26px; height: 26px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--text-dim); font-size: 13px; cursor: pointer; } .ds-icon-btn:hover { background: var(--surface-2); color: var(--text); } .ds-icon-btn.ds-danger:hover { color: var(--danger); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Multi-select due-date/topic filter pill. The 'on' state borrows its own semantic color on Overdue/Today chips instead of the accent.",
+      "html": "<button class=\"ds-chip ds-chip-on\">Overdue</button>",
+      "css": ".ds-chip { padding: 3px 9px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: 12px; color: var(--text-dim); cursor: pointer; } .ds-chip:hover { color: var(--text); } .ds-chip-on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); } .ds-chip-on.ds-chip-overdue { background: var(--overdue); border-color: var(--overdue); } .ds-chip-on.ds-chip-today { background: var(--today); border-color: var(--today); }"
+    },
+    {
+      "name": "Task Card",
+      "kind": "custom",
+      "refersTo": "task-card",
+      "description": "The signature component: a 3px left border recolors per due-date bucket, making urgency scannable without reading text.",
+      "html": "<li class=\"ds-task ds-task-overdue\"><input type=\"checkbox\" class=\"ds-task-check\" /><div class=\"ds-task-body\"><div class=\"ds-task-title-row\"><span class=\"ds-task-title\">Finish report</span><span class=\"ds-task-topic\">Work</span></div><div class=\"ds-task-meta\"><span class=\"ds-task-due\">Yesterday</span><span class=\"ds-prio-dot\"></span><span class=\"ds-task-flag\">Overdue</span></div></div></li>",
+      "css": ".ds-task { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--border); border-radius: 8px; list-style: none; } .ds-task:hover { box-shadow: 0 1px 6px var(--shadow); } .ds-task-overdue { border-left-color: var(--overdue); } .ds-task-check { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; } .ds-task-body { flex: 1; min-width: 0; } .ds-task-title-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; } .ds-task-title { font-weight: 600; font-size: 13px; } .ds-task-topic { font-size: 10px; padding: 1px 6px; border-radius: 999px; background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); } .ds-task-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 11px; color: var(--text-dim); } .ds-task-due { color: var(--overdue); font-weight: 600; } .ds-prio-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--prio-high); display: inline-block; } .ds-task-flag { font-size: 10px; font-weight: 700; color: var(--accent-text); background: var(--overdue); padding: 1px 6px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }"
+    },
+    {
+      "name": "Tab",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Top-rounded tab; the active tab fills with the page background so it visually merges into the content below it.",
+      "html": "<div class=\"ds-tab ds-tab-on\">All tasks</div>",
+      "css": ".ds-tab { padding: 6px 14px; border-radius: 8px 8px 0 0; font-size: 12px; font-weight: 600; color: var(--text-dim); border: 1px solid transparent; border-bottom: none; cursor: pointer; } .ds-tab:hover { color: var(--text); } .ds-tab-on { color: var(--text); background: var(--bg); border-color: var(--border); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": null,
+      "description": "Labeled field used throughout the add/edit task form.",
+      "html": "<label class=\"ds-field\"><span>Title</span><input type=\"text\" placeholder=\"Task title\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 3px; } .ds-field > span { font-size: 11px; color: var(--text-dim); } .ds-field input { font-family: inherit; font-size: 13px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); width: 100%; }"
+    },
+    {
+      "name": "Modal",
+      "kind": "card",
+      "refersTo": "modal",
+      "description": "Centered floating dialog for the task form and settings; the only component with real elevation.",
+      "html": "<div class=\"ds-modal\"><h2 class=\"ds-modal-title\">New task</h2></div>",
+      "css": ".ds-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: 100%; max-width: 360px; box-shadow: 0 8px 30px var(--shadow); } .ds-modal-title { font-size: 15px; font-weight: 700; margin: 0 0 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Control Panel",
+    "overview": "Task Assistant reads like flight-deck instrumentation, not a consumer productivity app: every pixel is informative, color is a signal rather than a decoration, and the whole interface stays small enough to live permanently at the edge of a screen. It is a single-user, local-only tool opened and glanced at dozens of times a day, so the design optimizes aggressively for scan speed and repeat-use efficiency over first-impression polish -- there is no one to onboard and no audience to persuade.\n\nThe system is deliberately dense: a 13px base font, a 2-16px spacing rhythm, and a frameless window with custom minimize/maximize/close controls built from plain Unicode glyphs rather than an icon library. Surfaces are flat at rest; the only visual 'weight' in the system is semantic color -- the due-date urgency scale (overdue/today/soon/later) and the priority scale (high/medium/low) do the work that shadows, size, or illustration would do in a more expressive product. This density is the intended standard for future screens, not a placeholder to be loosened.\n\nThe visual anti-reference is the mainstream SaaS to-do app: no onboarding carousel, no empty-state illustration, no card-heavy marketing-style spacing, no bespoke icon set, no celebratory animation. Nothing in the system exists to be admired; everything exists to be read in under a second.",
+    "keyCharacteristics": [
+      "Flat, dense, information-first -- color carries meaning, not mood.",
+      "One real accent (signal blue) reserved for interactive/selected state; a separate, deliberately distinct color family encodes due-date urgency and task priority.",
+      "Plain Unicode glyphs stand in for icons -- no icon font, no SVG set, no image assets.",
+      "Flat by default; shadow appears only as a direct response to hover or an overlay (modal).",
+      "Frameless window with its own minimal title-bar-equivalent, built from the same component vocabulary as the rest of the app."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Signal Blue means \"interactive or selected,\" full stop. It never appears as a passive status color, and no other color is used for a clickable/selected state.", "section": "colors" },
+      { "name": "The Weight-Not-Size Rule", "body": "The type scale barely moves (11px-15px); hierarchy is built with weight (400/500/600/700), case, and letter-spacing rather than dramatic size jumps. This keeps the dense layout from feeling chaotic.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Every surface is flat at rest -- no ambient shadows, no resting elevation. Shadow exists only as a direct response to an interaction state.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep Signal Blue exclusively for interactive/selected state -- never repurpose it as a passive status color.",
+      "Do keep the due-date urgency scale (overdue/today/soon/later) and the priority scale (high/medium/low) visually distinct, even though both borrow from a red/amber/green vocabulary.",
+      "Do keep new surfaces flat at rest; add shadow only as a direct response to hover or an overlay.",
+      "Do build hierarchy with weight, case, and letter-spacing before reaching for a larger font size.",
+      "Do use plain Unicode glyphs for any new icon need rather than introducing an icon library or SVG set."
+    ],
+    "donts": [
+      "Don't add a resting/ambient shadow to any surface -- it breaks the Flat-By-Default Rule.",
+      "Don't loosen the spacing scale (2-16px) for a new screen \"for breathing room\" -- density is the standard, not a gap to fill.",
+      "Don't introduce a second brand accent color; there is exactly one (Signal Blue), by design.",
+      "Don't add onboarding flows, empty-state illustration, or celebratory motion -- this is a single-user tool with no audience to delight on first use."
+    ]
+  }
+}

@@ -31,7 +31,8 @@ export default function Header({
       <div className="header-drag">
         <div className="header-date">
           <span className="header-date-main">{formatHeaderDate(now)}</span>
-          <span className="header-subtitle">Task Assistant</span>
+          {/* The app's one <h1>: a stable document title, unlike the live date above it. */}
+          <h1 className="header-subtitle">Task Assistant</h1>
         </div>
       </div>
 

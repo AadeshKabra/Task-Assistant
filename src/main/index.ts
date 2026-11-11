@@ -1,9 +1,10 @@
 // Main process entry point. Owns the window lifecycle, OS integration (tray,
 // login item, always-on-top), persistence bootstrap, and IPC registration.
 
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, nativeTheme } from 'electron'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import type { Settings } from '../shared/types'
 import { initDb } from './db'
 import { initSettings, getSettings, getBounds, saveBounds } from './settings'
 import { registerIpc, broadcastSettings } from './ipc'
@@ -19,6 +20,13 @@ if (!gotLock) {
   app.quit()
 } else {
   app.on('second-instance', () => showWindow())
+}
+
+// Matches --bg light/dark from styles.css — keeps the pre-paint native
+// background from flashing the wrong theme on launch.
+function resolveBackgroundColor(theme: Settings['theme']): string {
+  const dark = theme === 'dark' || (theme === 'system' && nativeTheme.shouldUseDarkColors)
+  return dark ? '#1a1b1f' : '#f4f5f7'
 }
 
 function createWindow(): void {
@@ -39,7 +47,7 @@ function createWindow(): void {
     minHeight: 420,
     show: false,
     frame: false, // frameless — custom minimal chrome drawn in the renderer
-    backgroundColor: '#1e1f24',
+    backgroundColor: resolveBackgroundColor(settings.theme),
     icon,
     alwaysOnTop: settings.alwaysOnTop,
     webPreferences: {

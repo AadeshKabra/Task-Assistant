@@ -7,11 +7,11 @@
   --surface-2: #eef0f3;
   --border: #dcdfe4;
   --text: #1e1f24;
-  --text-dim: #6b7280;
-  --accent: #3b82f6;
+  --text-dim: #666c7a;
+  --accent: #1b6df5;
   --accent-text: #ffffff;
   --overdue: #dc2626;
-  --today: #d97706;
+  --today: #b06105;
   --soon: #ca8a04;
   --later: #2563eb;
   --done: #9ca3af;
@@ -20,6 +20,13 @@
   --prio-high: #ef4444;
   --prio-medium: #f59e0b;
   --prio-low: #10b981;
+  /* Fill variants: used only where white/--accent-text sits on top of a solid
+     background (buttons, badges, selected chips). Darker than the text/border
+     variants above on purpose — a color bright enough to read as text on its
+     own background may still be too light to pass 4.5:1 under white text. */
+  --accent-fill: var(--accent);
+  --overdue-fill: var(--overdue);
+  --today-fill: var(--today);
 }
 
 :root[data-theme='dark'] {
@@ -38,9 +45,14 @@
   --done: #6b7280;
   --danger: #f87171;
   --shadow: rgba(0, 0, 0, 0.4);
-  --prio-high: #f87171;
+  /* Deliberately lighter than --overdue: priority is informational, due-date
+     urgency is what should alarm. Must never equal --overdue. */
+  --prio-high: #fca5a5;
   --prio-medium: #fbbf24;
   --prio-low: #34d399;
+  --accent-fill: #1f6df5;
+  --overdue-fill: #ea0c0c;
+  --today-fill: #976e03;
 }
 
 * {
@@ -61,6 +73,23 @@ body {
   background: var(--bg);
   overflow: hidden;
   user-select: none;
+}
+
+::selection {
+  background: var(--accent-fill);
+  color: var(--accent-text);
+}
+
+::placeholder {
+  color: var(--text-dim);
+  opacity: 1; /* some engines apply a default opacity on top of this color */
+}
+
+/* Keyboard-only indicator, themed from the palette rather than left as the
+   OS default. Dense layouts get a tighter offset than a spacious one would. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .app {
@@ -92,7 +121,9 @@ body {
   font-weight: 600;
 }
 .header-subtitle {
+  margin: 0; /* now an <h1>; neutralize its default heading margin */
   font-size: 10px;
+  font-weight: 400;
   color: var(--text-dim);
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -126,9 +157,9 @@ button {
   background: var(--border);
 }
 .btn-primary {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-text);
-  border-color: var(--accent);
+  border-color: var(--accent-fill);
 }
 .btn-primary:hover {
   filter: brightness(1.08);
@@ -179,6 +210,29 @@ button {
   border-color: var(--border);
 }
 
+/* ---- Error banner --------------------------------------------------------
+   Reuses --danger (the same alarm red as overdue/destructive) rather than a
+   dedicated error color — a failed save belongs in the same highest-alarm
+   bucket. Dismiss is manual; nothing here auto-expires an error unread. */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--danger);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+.error-banner .icon-btn {
+  color: var(--danger);
+}
+.error-banner .icon-btn:hover {
+  background: var(--surface-2);
+}
+
 /* ---- Filter bar ---------------------------------------------------------- */
 .filterbar {
   padding: 8px 10px;
@@ -205,17 +259,17 @@ button {
   color: var(--text);
 }
 .chip-on {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-text);
-  border-color: var(--accent);
+  border-color: var(--accent-fill);
 }
 .chip-overdue.chip-on {
-  background: var(--overdue);
-  border-color: var(--overdue);
+  background: var(--overdue-fill);
+  border-color: var(--overdue-fill);
 }
 .chip-today.chip-on {
-  background: var(--today);
-  border-color: var(--today);
+  background: var(--today-fill);
+  border-color: var(--today-fill);
 }
 .controls-row {
   display: flex;
@@ -260,9 +314,9 @@ input[type='time'] {
   color: var(--text-dim);
 }
 .toggle-on {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--accent-text);
-  border-color: var(--accent);
+  border-color: var(--accent-fill);
 }
 
 /* ---- Task list ----------------------------------------------------------- */
@@ -333,11 +387,23 @@ input[type='time'] {
 .task.bucket-later {
   border-left-color: var(--later);
 }
-.task-done {
-  opacity: 0.6;
-}
+/* Was `opacity: 0.6` — that composited the whole card (background AND text)
+   against whatever sat behind it, which silently pushed text below 4.5:1
+   depending on the stacking context. De-emphasis now comes from explicit
+   muted colors below instead, so every piece of done-task text stays
+   independently contrast-checkable against its actual background. */
 .task-strike .task-title {
   text-decoration: line-through;
+}
+.task-done .task-title {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.task-done .task-due.due-overdue,
+.task-done .task-due.due-today,
+.task-done .task-due.due-week {
+  color: var(--text-dim);
+  font-weight: 400;
 }
 .task-check {
   margin-top: 2px;
@@ -360,6 +426,7 @@ input[type='time'] {
   font-weight: 600;
   font-size: 13px;
   word-break: break-word;
+  user-select: text; /* the one place in the UI chrome worth copying out */
 }
 .task-topic {
   font-size: 10px;
@@ -394,6 +461,12 @@ input[type='time'] {
   border-radius: 50%;
   display: inline-block;
 }
+/* Priority stops being actionable once a task is done — same reasoning as
+   muting its due-date text above, extended to the one other urgency/priority
+   signal on the row. */
+.task-done .task-prio-dot {
+  background: var(--text-dim);
+}
 .prio-dot-high {
   background: var(--prio-high);
 }
@@ -411,7 +484,7 @@ input[type='time'] {
   font-size: 10px;
   font-weight: 700;
   color: var(--accent-text);
-  background: var(--overdue);
+  background: var(--overdue-fill);
   padding: 1px 6px;
   border-radius: 999px;
   text-transform: uppercase;
@@ -423,6 +496,7 @@ input[type='time'] {
   color: var(--text-dim);
   white-space: pre-wrap;
   word-break: break-word;
+  user-select: text;
 }
 .task-notes-clamped {
   display: -webkit-box;
@@ -546,7 +620,7 @@ input[type='time'] {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--accent-text);
-  background: var(--accent);
+  background: var(--accent-fill);
   padding: 1px 6px;
   border-radius: 999px;
 }

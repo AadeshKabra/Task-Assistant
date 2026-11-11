@@ -198,8 +198,13 @@ export function setCompleted(id: number, completed: boolean): Task | null {
       })
     }
     db.prepare(
-      `UPDATE tasks SET completed = @c, completed_at = @at, updated_at = @at WHERE id = @id`
-    ).run({ c: completed ? 1 : 0, at: completed ? nowIso() : null, id })
+      `UPDATE tasks SET completed = @c, completed_at = @completedAt, updated_at = @updatedAt WHERE id = @id`
+    ).run({
+      c: completed ? 1 : 0,
+      completedAt: completed ? nowIso() : null, // cleared on un-complete, by design
+      updatedAt: nowIso(), // always moves — `updated_at` is NOT NULL and tracks any edit
+      id
+    })
   })
   tx()
 

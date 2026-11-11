@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
 import type { Settings, ThemePref } from '@shared/types'
+import { useModalA11y } from '../hooks/useModalA11y'
 
 interface Props {
   settings: Settings
@@ -8,18 +8,21 @@ interface Props {
 }
 
 export default function SettingsPanel({ settings, onChange, onClose }: Props): JSX.Element {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  const dialogRef = useModalA11y<HTMLDivElement>(onClose)
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
-      <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-        <h2 className="modal-title">Settings</h2>
+      <div
+        ref={dialogRef}
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-title"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <h2 id="settings-title" className="modal-title">
+          Settings
+        </h2>
 
         <label className="setting-row">
           <span>

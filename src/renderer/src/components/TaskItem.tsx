@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { Task } from '@shared/types'
-import { bucketOf, formatDueLabel } from '../lib/dates'
+import { bucketOf, daysOverdue, formatDueLabel } from '../lib/dates'
 
 /**
  * Task notes clamped to two lines. A "Show more" toggle appears only when the
@@ -132,7 +132,7 @@ export default function TaskItem({
             <span className="task-recur">{RECUR_LABEL[task.recurrence]}</span>
           )}
           {bucket === 'overdue' && !task.completed && (
-            <span className="task-flag">Overdue</span>
+            <span className="task-flag">{daysOverdue(task, now)}d overdue</span>
           )}
         </div>
         {task.notes && <TaskNotes notes={task.notes} />}

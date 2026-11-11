@@ -42,21 +42,32 @@ export default function App(): JSX.Element {
   const [editing, setEditing] = useState<Task | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+  // Never throws — every mutation handler below calls this to resync after
+  // its own IPC call, whether that call succeeded or failed, so this is the
+  // one place that has to stay safe to await unconditionally.
   const reload = useCallback(async () => {
-    const [t, tp] = await Promise.all([window.api.tasks.list(), window.api.tasks.topics()])
-    setTasks(t)
-    setTopics(tp)
+    try {
+      const [t, tp] = await Promise.all([window.api.tasks.list(), window.api.tasks.topics()])
+      setTasks(t)
+      setTopics(tp)
+    } catch {
+      setError('Could not refresh your tasks. Try restarting the app.')
+    }
   }, [])
 
   // Initial load + settings + main-process event subscriptions.
   useEffect(() => {
     void reload()
-    void window.api.settings.get().then((s) => {
-      setSettings(s)
-      setFilter((f) => ({ ...f, showCompleted: s.showCompleted }))
-      applyTheme(s.theme)
-    })
+    void window.api.settings
+      .get()
+      .then((s) => {
+        setSettings(s)
+        setFilter((f) => ({ ...f, showCompleted: s.showCompleted }))
+        applyTheme(s.theme)
+      })
+      .catch(() => setError('Could not load settings. Try restarting the app.'))
 
     const offSettings = window.api.onSettingsChanged((s) => {
       setSettings(s)
@@ -100,21 +111,44 @@ export default function App(): JSX.Element {
       const label = task ? `"${task.title}"` : 'this task'
       const ok = window.confirm(`Delete ${label} permanently? This cannot be undone.`)
       if (!ok) return
-      await window.api.tasks.remove(id)
+      // Optimistic: drop the row immediately. reload() always follows — on
+      // success it's just a resync, on failure it's what undoes this and
+      // brings the row back, since the server is the source of truth.
+      setTasks((ts) => ts.filter((t) => t.id !== id))
+      try {
+        await window.api.tasks.remove(id)
+      } catch {
+        setError(`Could not delete ${label}. Please try again.`)
+      }
       await reload()
     },
     [tasks, reload]
   )
   const handleToggle = useCallback(
     async (task: Task) => {
-      await window.api.tasks.setCompleted(task.id, !task.completed)
+      // Optimistic: flip the checkbox immediately — this is the single most
+      // frequent action in the app, so the perceived response shouldn't
+      // wait on the round trip. reload() always follows: on success it's
+      // what picks up a recurring task's freshly-spawned next occurrence;
+      // on failure it's what reverts this back to the real state.
+      const next = !task.completed
+      setTasks((ts) => ts.map((t) => (t.id === task.id ? { ...t, completed: next } : t)))
+      try {
+        await window.api.tasks.setCompleted(task.id, next)
+      } catch {
+        setError(`Could not update "${task.title}". Please try again.`)
+      }
       await reload()
     },
     [reload]
   )
   const handleReorder = useCallback(
     async (orderedIds: number[]) => {
-      await window.api.tasks.reorder(orderedIds)
+      try {
+        await window.api.tasks.reorder(orderedIds)
+      } catch {
+        setError('Could not save the new order. Please try again.')
+      }
       await reload()
     },
     [reload]
@@ -135,18 +169,26 @@ export default function App(): JSX.Element {
       if (a === -1 || b === -1) return
       ;[next[a], next[b]] = [next[b], next[a]]
       setTopics(next) // optimistic — keeps the UI snappy
-      await window.api.tasks.reorderTopics(next)
+      try {
+        await window.api.tasks.reorderTopics(next)
+      } catch {
+        setError('Could not save the new topic order. Please try again.')
+      }
       await reload()
     },
     [topics, reload]
   )
 
   const handleSettings = useCallback(async (patch: Partial<Settings>) => {
-    const next = await window.api.settings.update(patch)
-    setSettings(next)
-    applyTheme(next.theme)
-    if (patch.showCompleted !== undefined) {
-      setFilter((f) => ({ ...f, showCompleted: next.showCompleted }))
+    try {
+      const next = await window.api.settings.update(patch)
+      setSettings(next)
+      applyTheme(next.theme)
+      if (patch.showCompleted !== undefined) {
+        setFilter((f) => ({ ...f, showCompleted: next.showCompleted }))
+      }
+    } catch {
+      setError('Could not save settings. Please try again.')
     }
   }, [])
 
@@ -211,6 +253,15 @@ export default function App(): JSX.Element {
         showDateAndSort={view === 'list'}
       />
 
+      {error && (
+        <div className="error-banner" role="alert">
+          <span>{error}</span>
+          <button className="icon-btn" onClick={() => setError(null)} aria-label="Dismiss">
+            ✕
+          </button>
+        </div>
+      )}
+
       <main className="content">
         {view === 'list' ? (
           <TaskList
@@ -243,9 +294,21 @@ export default function App(): JSX.Element {
           existingTopics={topics}
           onCancel={() => setFormOpen(false)}
           onSubmit={async (input) => {
-            if (editing) await handleUpdate(editing.id, input)
-            else await handleCreate(input)
-            setFormOpen(false)
+            try {
+              if (editing) await handleUpdate(editing.id, input)
+              else await handleCreate(input)
+              setFormOpen(false)
+            } catch {
+              // Leave the modal open with the user's input intact so they
+              // can retry; TaskForm resets its own submitting state on
+              // this rejection.
+              setError(
+                editing
+                  ? 'Could not save your changes. Please try again.'
+                  : 'Could not add the task. Please try again.'
+              )
+              throw new Error('submit failed')
+            }
           }}
         />
       )}

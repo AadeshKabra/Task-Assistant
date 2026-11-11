@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import type { Priority, Recurrence, Task, TaskInput } from '@shared/types'
+import { useModalA11y } from '../hooks/useModalA11y'
 
 interface Props {
   task: Task | null // null = create mode
   existingTopics: string[]
-  onSubmit: (input: TaskInput) => void
+  onSubmit: (input: TaskInput) => Promise<void>
   onCancel: () => void
 }
 
@@ -21,44 +22,48 @@ export default function TaskForm({
   const [priority, setPriority] = useState<Priority>(task?.priority ?? 'medium')
   const [recurrence, setRecurrence] = useState<Recurrence>(task?.recurrence ?? 'none')
   const [notes, setNotes] = useState(task?.notes ?? '')
-  const titleRef = useRef<HTMLInputElement>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const dialogRef = useModalA11y<HTMLFormElement>(onCancel)
 
-  useEffect(() => {
-    titleRef.current?.focus()
-  }, [])
-
-  // Esc closes the dialog.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onCancel()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onCancel])
-
-  const submit = (e: React.FormEvent): void => {
+  const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
-    if (!title.trim()) return
-    onSubmit({
-      title: title.trim(),
-      topic: topic.trim(),
-      dueDate: dueDate || null,
-      dueTime: dueDate && dueTime ? dueTime : null, // time only meaningful with a date
-      priority,
-      recurrence: dueDate ? recurrence : 'none', // recurrence needs a due date
-      notes: notes.trim()
-    })
+    if (!title.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      await onSubmit({
+        title: title.trim(),
+        topic: topic.trim(),
+        dueDate: dueDate || null,
+        dueTime: dueDate && dueTime ? dueTime : null, // time only meaningful with a date
+        priority,
+        recurrence: dueDate ? recurrence : 'none', // recurrence needs a due date
+        notes: notes.trim()
+      })
+    } catch {
+      // Failure: re-enable the form so the user can retry without losing
+      // what they typed. On success the parent unmounts this modal instead.
+      setSubmitting(false)
+    }
   }
 
   return (
     <div className="modal-backdrop" onMouseDown={onCancel}>
-      <form className="modal" onMouseDown={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2 className="modal-title">{task ? 'Edit task' : 'New task'}</h2>
+      <form
+        ref={dialogRef}
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="task-form-title"
+        onMouseDown={(e) => e.stopPropagation()}
+        onSubmit={submit}
+      >
+        <h2 id="task-form-title" className="modal-title">
+          {task ? 'Edit task' : 'New task'}
+        </h2>
 
         <label className="field">
           <span>Title *</span>
           <input
-            ref={titleRef}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What needs doing?"
@@ -136,8 +141,8 @@ export default function TaskForm({
           <button type="button" className="btn" onClick={onCancel}>
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary" disabled={!title.trim()}>
-            {task ? 'Save' : 'Add task'}
+          <button type="submit" className="btn btn-primary" disabled={!title.trim() || submitting}>
+            {submitting ? (task ? 'Saving…' : 'Adding…') : task ? 'Save' : 'Add task'}
           </button>
         </div>
       </form>
